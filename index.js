@@ -83,31 +83,27 @@ server.delete('/api/users/:id', (req, res) => {
 // PUT request updates the user with the specified id using data from the request body- returns the modified document
 
 server.put('/api/users/:id', (req, res) => {
-    const user = req.body;
     const id = req.params.id;
+    const {name, bio} = req.body;
 
-    Users.findById(id)
-    .then(users => {
-        if (users) {
-            res.status(200).json({message: "The user was updated successfully"});
+  if (!name || !bio){
+    return
+    res.status(400).json({errorMessage: "Please provide name and bio for the user." })
+  }
+    Users.update(id, {name, bio})
+    .then(updatedUser => {
+        if (updatedUser) {
+            Users.findById(id)
+            .then(user => {
+                res.status(201).json(user)
+            })
         } else {
             res.status(404).json({message: "The user with the specified ID does not exist." })
         }
     })
-        if (user.name && user.bio) {
-            Users.update(id, user)
-            .then(user => {
-                res.status(200).json(user);
-            })
-            .catch(err => {
-                res.status(500).json({errorMessage: "The user information could not be modified." })
-            })
-        } else if (!user.id){
-            res.status(404).json({message: "The user with the specified ID does not exist."})
-        } 
-        else {
-            res.status(400).json({errorMessage: "Please provide name and bio for the user." })
-        }
+        .catch(err => {
+            res.status(500).json({errorMessage: "The user information could not be modified." })
+        })
 });
 
 
